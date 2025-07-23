@@ -1,0 +1,10 @@
+{
+  "extends": "./base.json",
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "module": "esnext",
+    "target": "es2022",
+    "noEmit": true,
+    "types": ["node"]
+  }
+}

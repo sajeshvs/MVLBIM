@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCP - Simple Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .status {
+            background: #10b981;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            font-weight: bold;
+        }
+        .links {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .link {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .emoji {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🏗️</div>
+        <h1>Construction Cost Platform</h1>
+        <p>Modern construction cost management and project control platform</p>
+        
+        <div class="status">
+            ✅ System Status: Online and Ready!
+        </div>
+        
+        <div class="links">
+            <a href="http://localhost:3000" class="link">🌐 Web App</a>
+            <a href="http://localhost:3001/api" class="link">🚀 API</a>
+            <a href="http://localhost:3001/docs" class="link">📚 API Docs</a>
+        </div>
+        
+        <p style="margin-top: 2rem; font-size: 1rem; opacity: 0.7;">
+            Built with Next.js, Fastify, Prisma, and TypeScript
+        </p>
+    </div>
+</body>
+</html>

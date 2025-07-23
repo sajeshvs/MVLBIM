@@ -1,0 +1,9 @@
+{
+  "extends": "@ccp/tsconfig/base.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "prisma/**/*"],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  }
+}

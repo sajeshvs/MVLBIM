@@ -1,0 +1,9 @@
+{
+  "extends": "@ccp/tsconfig/node16.json",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"],
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src"
+  }
+}

@@ -1,0 +1,419 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Authentication & User Management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  phone     String?
+  avatar    String?
+  role      UserRole @default(USER)
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+
+  // Relationships
+  tenantMemberships TenantMember[]
+  createdProjects   Project[]      @relation("ProjectCreator")
+  assignedTasks     Task[]
+  activities        Activity[]
+  documents         Document[]     @relation("DocumentCreator")
+  costItems         CostItem[]     @relation("CostItemCreator")
+  
+  @@map("users")
+}
+
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logo        String?
+  address     String?
+  phone       String?
+  email       String?
+  settings    Json?
+  subscription TenantSubscription?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  members    TenantMember[]
+  projects   Project[]
+  categories Category[]
+  
+  @@map("tenants")
+}
+
+model TenantMember {
+  id       String     @id @default(cuid())
+  userId   String
+  tenantId String
+  role     TenantRole @default(MEMBER)
+  status   MemberStatus @default(ACTIVE)
+  joinedAt DateTime   @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+  @@map("tenant_members")
+}
+
+model TenantSubscription {
+  id        String           @id @default(cuid())
+  tenantId  String           @unique
+  plan      SubscriptionPlan
+  status    SubscriptionStatus
+  startDate DateTime
+  endDate   DateTime?
+  features  Json?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_subscriptions")
+}
+
+// Project Management
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  code        String        // Project reference code
+  status      ProjectStatus @default(PLANNING)
+  type        ProjectType   @default(CONSTRUCTION)
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Decimal?      @db.Decimal(15, 2)
+  currency    String        @default("USD")
+  location    String?
+  settings    Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Foreign Keys
+  tenantId  String
+  createdBy String
+
+  // Relationships
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  creator    User        @relation("ProjectCreator", fields: [createdBy], references: [id])
+  phases     Phase[]
+  costItems  CostItem[]
+  tasks      Task[]
+  documents  Document[]
+  activities Activity[]
+
+  @@unique([tenantId, code])
+  @@map("projects")
+}
+
+model Phase {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  order       Int
+  status      PhaseStatus @default(PLANNED)
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Decimal?    @db.Decimal(15, 2)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Foreign Keys
+  projectId String
+
+  // Relationships
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  costItems CostItem[]
+  tasks     Task[]
+
+  @@map("phases")
+}
+
+// Cost Management
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  code        String
+  description String?
+  parentId    String?
+  level       Int     @default(1)
+  isActive    Boolean @default(true)
+
+  // Foreign Keys
+  tenantId String
+
+  // Relationships
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
+  costItems CostItem[]
+
+  @@unique([tenantId, code])
+  @@map("categories")
+}
+
+model CostItem {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  code        String?
+  type        CostItemType @default(MATERIAL)
+  quantity    Decimal      @db.Decimal(15, 4)
+  unit        String
+  unitCost    Decimal      @db.Decimal(15, 2)
+  totalCost   Decimal      @db.Decimal(15, 2)
+  status      CostStatus   @default(PLANNED)
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Foreign Keys
+  projectId  String
+  phaseId    String?
+  categoryId String
+  createdBy  String
+
+  // Relationships
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase     Phase?    @relation(fields: [phaseId], references: [id])
+  category  Category  @relation(fields: [categoryId], references: [id])
+  creator   User      @relation("CostItemCreator", fields: [createdBy], references: [id])
+  revisions CostRevision[]
+
+  @@map("cost_items")
+}
+
+model CostRevision {
+  id          String   @id @default(cuid())
+  version     Int
+  quantity    Decimal  @db.Decimal(15, 4)
+  unitCost    Decimal  @db.Decimal(15, 2)
+  totalCost   Decimal  @db.Decimal(15, 2)
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  // Foreign Keys
+  costItemId String
+  createdBy  String
+
+  // Relationships
+  costItem CostItem @relation(fields: [costItemId], references: [id], onDelete: Cascade)
+
+  @@map("cost_revisions")
+}
+
+// Task & Schedule Management
+model Task {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  status      TaskStatus @default(NOT_STARTED)
+  priority    Priority   @default(MEDIUM)
+  startDate   DateTime?
+  endDate     DateTime?
+  dueDate     DateTime?
+  progress    Int        @default(0) // 0-100
+  estimatedHours Int?
+  actualHours    Int?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Foreign Keys
+  projectId   String
+  phaseId     String?
+  assignedTo  String?
+
+  // Relationships
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phase      Phase?  @relation(fields: [phaseId], references: [id])
+  assignee   User?   @relation(fields: [assignedTo], references: [id])
+  activities Activity[]
+
+  @@map("tasks")
+}
+
+// Document Management
+model Document {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  fileName    String
+  fileSize    Int
+  mimeType    String
+  filePath    String
+  version     String       @default("1.0")
+  type        DocumentType @default(OTHER)
+  tags        String[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Foreign Keys
+  projectId String
+  createdBy String
+
+  // Relationships
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator User    @relation("DocumentCreator", fields: [createdBy], references: [id])
+
+  @@map("documents")
+}
+
+// Activity & Audit Log
+model Activity {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime     @default(now())
+
+  // Foreign Keys
+  userId    String?
+  projectId String?
+  taskId    String?
+
+  // Relationships
+  user    User?    @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+  task    Task?    @relation(fields: [taskId], references: [id])
+
+  @@map("activities")
+}
+
+// Enums
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum TenantRole {
+  OWNER
+  ADMIN
+  PROJECT_MANAGER
+  ESTIMATOR
+  MEMBER
+  VIEWER
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  TRIAL
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELED
+}
+
+enum ProjectType {
+  CONSTRUCTION
+  RENOVATION
+  INFRASTRUCTURE
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+}
+
+enum PhaseStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  CANCELED
+}
+
+enum CostItemType {
+  MATERIAL
+  LABOR
+  EQUIPMENT
+  SUBCONTRACTOR
+  OTHER
+}
+
+enum CostStatus {
+  PLANNED
+  APPROVED
+  ORDERED
+  RECEIVED
+  INVOICED
+  PAID
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum DocumentType {
+  CONTRACT
+  DRAWING
+  SPECIFICATION
+  PHOTO
+  REPORT
+  INVOICE
+  OTHER
+}
+
+enum ActivityType {
+  USER_LOGIN
+  USER_LOGOUT
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  COST_ITEM_CREATED
+  COST_ITEM_UPDATED
+  TASK_CREATED
+  TASK_UPDATED
+  DOCUMENT_UPLOADED
+  OTHER
+}

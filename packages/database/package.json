@@ -1,0 +1,30 @@
+{
+  "name": "@ccp/database",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "prisma generate && tsc",
+    "dev": "tsc --watch",
+    "generate": "prisma generate",
+    "migrate": "prisma migrate dev",
+    "deploy": "prisma migrate deploy",
+    "reset": "prisma migrate reset",
+    "seed": "tsx prisma/seed.ts",
+    "studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@ccp/tsconfig": "workspace:*",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.10.5",
+    "prisma": "^5.7.1",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3"
+  }
+}

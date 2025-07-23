@@ -1,0 +1,14 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+.nyc_output
+*.log
+*.tgz
+.env
+.env.local
+.env.production.local
+.env.staging.local
+.DS_Store
+.vscode/settings.json

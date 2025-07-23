@@ -1,0 +1,16 @@
+{
+  "name": "Construction Cost Platform",
+  "short_name": "CCP",
+  "description": "Modern construction cost management and project control platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
