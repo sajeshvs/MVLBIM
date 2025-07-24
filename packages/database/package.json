@@ -8,7 +8,7 @@
   "scripts": {
     "build": "prisma generate && tsc",
     "dev": "tsc --watch",
-    "generate": "prisma generate",
+    "generate": "pnpm exec prisma generate",
     "migrate": "prisma migrate dev",
     "deploy": "prisma migrate deploy",
     "reset": "prisma migrate reset",
