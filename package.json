@@ -25,9 +25,9 @@
     "postinstall": "pnpm db:generate"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "prettier": "^3.0.0",
-    "turbo": "^1.10.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^20.12.12",
+    "prettier": "^3.2.5",
+    "turbo": "^1.13.3",
+    "typescript": "^5.4.5"
   }
 }
